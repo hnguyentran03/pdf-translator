@@ -83,7 +83,8 @@ def query(client: openai.OpenAI,
     return message
 
 def insert_text_dynamic(page: pymupdf.TextPage, 
-                        text: str, 
+                        text: str,
+                        color: tuple,
                         bbox: tuple, 
                         max_size: int
 ):
@@ -96,6 +97,8 @@ def insert_text_dynamic(page: pymupdf.TextPage,
         The page to be written on.
     text: str
         The text that will be written on the page.
+    color: tuple
+        The color of the text.
     bbox: tuple
         A tuple (x0, y0, x1, y1) of the bounding box of the text.
     max_size: int
@@ -123,6 +126,7 @@ def insert_text_dynamic(page: pymupdf.TextPage,
     page.insert_text(pymupdf.Point(x, y),
                      text,
                      fontsize=font_size,
+                     color=color
                      )
 
 def replace_text(page: pymupdf.TextPage, 
@@ -145,21 +149,25 @@ def replace_text(page: pymupdf.TextPage,
         pos = int(pos) # Because spans initialized pos as an int
         if pos in spans:
             span = spans[pos]
-            insert_text_dynamic(page, replacement_text,
-                                span["bbox"], span["size"])
+            insert_text_dynamic(page=page, 
+                                text=replacement_text, 
+                                color=pymupdf.sRGB_to_pdf(span["color"]),
+                                bbox=span["bbox"], 
+                                max_size=span["size"])
 
 def main():
-    client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY")) # Replace api_key if needed
 
     # Gets the system prompt and puts in the desire language
     language = input("What is the language you want to translate to? ")
-    system_prompt = get_system_prompt("src/prompts/system_prompt.txt")
+    system_prompt = get_system_prompt("src/prompts/system_prompt.txt") # Replace path here for different prompts
     system_prompt = system_prompt.replace("{language}", language)
 
     # Because the pdfs are in the folder `pdfs/{filename}` for organization
     filename = input("Which PDF file do you want to translate (name of the folder/file)? ")
     input_path = pathlib.Path(f"pdfs/{filename}/{filename}.pdf")
 
+    # PDF processing
     with pymupdf.open(input_path) as doc:
         for page in doc:
             page_info = page.get_text("dict")
