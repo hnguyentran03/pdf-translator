@@ -26,6 +26,27 @@ def whiteout_block(page: pymupdf.TextPage, block: dict):
             page.draw_rect(span["bbox"], fill=(1, 1, 1), width=0)
 
 
+def get_span_from_block(block):
+    """
+    Gets the text information from the span in a given block.
+
+    Arguments
+    ---------
+    block: dict
+        The block that will be extracted from.
+
+    Returns
+    -------
+    list[dict]
+        List of spans that holds information on the text and its position, font, etc.
+    """
+    spans = []
+    for lines in block["lines"]:
+        for span in lines["spans"]:
+            spans.append(span)
+    return spans
+
+
 def query(client: openai.OpenAI, 
           data: str,
           model: str = "gpt-4o-mini",
@@ -58,7 +79,7 @@ def query(client: openai.OpenAI,
         messages=[system_msg, user_msg]
     )
 
-    message = completion.choices[0].message
+    message = completion.choices[0].message.content
     return message
 
 
@@ -75,20 +96,23 @@ def main():
     with pymupdf.open(input_path) as doc:
         for page in doc:
             page_info = page.get_text("dict")
-
+            spans = []
             for block in page_info["blocks"]:
                 if "image" not in block:
                     whiteout_block(page, block)
-        
-        
-        output_path = pathlib.Path(f"pdfs/{filename}/{filename}_result.pdf")
-        doc.save(output_path)
-        print("Done!")
+                    spans.extend(get_span_from_block(block))
+            
+            spans = dict(enumerate(spans))
+            texts = {pos: span["text"] for pos, span in spans.items()}
 
+            response = query(client, json.dumps(texts),system_prompt=system_prompt)
+            translated_texts = json.loads(response)
 
-    # data = {"1": "Chào mội người", "2": "tên em là Hiếu", "3": "AI in 13 years"}
-    # message = query(client, json.dumps(data), system_prompt=system_prompt)
-    # print(message)
+            print(translated_texts)
+        
+        # output_path = pathlib.Path(f"pdfs/{filename}/{filename}_result.pdf")
+        # doc.save(output_path)
+        # print("Done!")
     
 
 if __name__ == "__main__":
