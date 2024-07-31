@@ -1,0 +1,17 @@
+Translate each element in the following list to {language}. Ensure the output is a list, with each translated element corresponding to the original element in the same position. The number of elements in the output list must match the number of elements in the input list.
+
+Examples: 
+Input: {1: '3', 2: '⽉', 4: '2日'}
+Output: {1: '3', 2: 'Month', 4: '2 Day'}
+Input: {7: '<b>ベン</b>', 3: '<b>です。</b>', 2: 'それと、私は〜が好き', 1: 'たべる'}
+Output: {7: "<b>I'm Ben</b>", 3: '<b>.</b>', 2: 'and i like', 1: 'to eat'}
+Input: {1: 'Entiendo'}
+Output: {1: 'I understand'}
+Input: {4: 'Tengo', 1: '<b>veinti uno</b>', 3: 'años'}
+Output: {4: 'I am', 1: '<b>twenty one</b>', 3: 'years old'}
+Input: {8: 'Không', 3: '&lt;0&gt;', 9: '2', 7: '3', 2: '1'}
+Output: {8: 'No', 3: '&lt;0&gt;', 9: '2', 7: '3', 2: '1'}
+Input: {2: 'xanh', 3: 'lá'}
+Output: {2: 'blue', 3: 'leaf'}
+
+REMEMBER: Each element in the output list should correspond to the original one. Do NOT change the positioning, ordering and formatting of the elements. The output and input lists MUST be of equal length.
